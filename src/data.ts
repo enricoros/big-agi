@@ -96,7 +96,7 @@ export const ChatModels: { [key in ChatModelId]: ChatModelData } = {
 };
 
 
-export type SendModeId = 'immediate' | 'react';
+export type SendModeId = 'immediate' | 'react' | 'embeddings';
 export const defaultSendModeId: SendModeId = 'immediate';
 
 type SendModeData = {
@@ -113,4 +113,8 @@ export const SendModes: { [key in SendModeId]: SendModeData } = {
     label: 'Reason+Act',
     description: 'Answer your questions with ReAct and search',
   },
+  'embeddings': {
+    label: 'Embeddings',
+    description: 'Answer your questions with custom knowledge base',
+  }
 };

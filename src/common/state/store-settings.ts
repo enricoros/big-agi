@@ -1,179 +1,200 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import {create} from 'zustand';
+import {persist} from 'zustand/middleware';
 
 
 /// Settings Store
 
 interface SettingsStore {
 
-  // UI settings
+    // UI settings
 
-  preferredLanguage: string;
-  setPreferredLanguage: (preferredLanguage: string) => void;
+    preferredLanguage: string;
+    setPreferredLanguage: (preferredLanguage: string) => void;
 
-  centerMode: 'narrow' | 'wide' | 'full';
-  setCenterMode: (centerMode: 'narrow' | 'wide' | 'full') => void;
+    centerMode: 'narrow' | 'wide' | 'full';
+    setCenterMode: (centerMode: 'narrow' | 'wide' | 'full') => void;
 
-  enterToSend: boolean;
-  setEnterToSend: (enterToSend: boolean) => void;
+    enterToSend: boolean;
+    setEnterToSend: (enterToSend: boolean) => void;
 
-  renderMarkdown: boolean;
-  setRenderMarkdown: (renderMarkdown: boolean) => void;
+    renderMarkdown: boolean;
+    setRenderMarkdown: (renderMarkdown: boolean) => void;
 
-  showPurposeFinder: boolean;
-  setShowPurposeFinder: (showPurposeFinder: boolean) => void;
+    showPurposeFinder: boolean;
+    setShowPurposeFinder: (showPurposeFinder: boolean) => void;
 
-  showSystemMessages: boolean;
-  setShowSystemMessages: (showSystemMessages: boolean) => void;
+    showSystemMessages: boolean;
+    setShowSystemMessages: (showSystemMessages: boolean) => void;
 
-  zenMode: 'clean' | 'cleaner';
-  setZenMode: (zenMode: 'clean' | 'cleaner') => void;
+    zenMode: 'clean' | 'cleaner';
+    setZenMode: (zenMode: 'clean' | 'cleaner') => void;
 
-  // OpenAI API settings
+    // OpenAI API settings
 
-  apiHost: string;
-  setApiHost: (apiHost: string) => void;
+    apiHost: string;
+    setApiHost: (apiHost: string) => void;
 
-  apiKey: string;
-  setApiKey: (apiKey: string) => void;
+    apiKey: string;
+    setApiKey: (apiKey: string) => void;
 
-  apiOrganizationId: string;
-  setApiOrganizationId: (apiOrganizationId: string) => void;
+    apiOrganizationId: string;
+    setApiOrganizationId: (apiOrganizationId: string) => void;
 
-  heliconeKey: string;
-  setHeliconeKey: (heliconeKey: string) => void;
+    heliconeKey: string;
+    setHeliconeKey: (heliconeKey: string) => void;
 
-  modelTemperature: number;
-  setModelTemperature: (modelTemperature: number) => void;
+    modelTemperature: number;
+    setModelTemperature: (modelTemperature: number) => void;
 
-  modelMaxResponseTokens: number;
-  setModelMaxResponseTokens: (modelMaxResponseTokens: number) => void;
+    modelMaxResponseTokens: number;
+    setModelMaxResponseTokens: (modelMaxResponseTokens: number) => void;
 
-  // ElevenLabs Text to Speech settings
+    // ElevenLabs Text to Speech settings
 
-  elevenLabsApiKey: string;
-  setElevenLabsApiKey: (apiKey: string) => void;
+    elevenLabsApiKey: string;
+    setElevenLabsApiKey: (apiKey: string) => void;
 
-  elevenLabsVoiceId: string;
-  setElevenLabsVoiceId: (voiceId: string) => void;
+    elevenLabsVoiceId: string;
+    setElevenLabsVoiceId: (voiceId: string) => void;
 
-  elevenLabsAutoSpeak: 'off' | 'firstLine';
-  setElevenLabsAutoSpeak: (autoSpeak: 'off' | 'firstLine') => void;
+    elevenLabsAutoSpeak: 'off' | 'firstLine';
+    setElevenLabsAutoSpeak: (autoSpeak: 'off' | 'firstLine') => void;
 
-  // Prodia Image Generation settings
+    // Prodia Image Generation settings
 
-  prodiaApiKey: string;
-  setProdiaApiKey: (apiKey: string) => void;
+    prodiaApiKey: string;
+    setProdiaApiKey: (apiKey: string) => void;
 
-  prodiaModelId: string;
-  setProdiaModelId: (modelId: string) => void;
+    prodiaModelId: string;
+    setProdiaModelId: (modelId: string) => void;
 
-  prodiaNegativePrompt: string;
-  setProdiaNegativePrompt: (negativePrompt: string) => void;
+    prodiaNegativePrompt: string;
+    setProdiaNegativePrompt: (negativePrompt: string) => void;
 
-  prodiaSteps: number;
-  setProdiaSteps: (steps: number) => void;
+    prodiaSteps: number;
+    setProdiaSteps: (steps: number) => void;
 
-  prodiaCfgScale: number;
-  setProdiaCfgScale: (cfgScale: number) => void;
+    prodiaCfgScale: number;
+    setProdiaCfgScale: (cfgScale: number) => void;
 
-  prodiaSeed: number | null;
-  setProdiaSeed: (seed: string) => void;
+    prodiaSeed: number | null;
+    setProdiaSeed: (seed: string) => void;
 
-  // Google Custom Search settings
-  googleCloudApiKey: string;
-  setGoogleCloudApiKey: (googleApiKey: string) => void;
+    // Google Custom Search settings
+    googleCloudApiKey: string;
+    setGoogleCloudApiKey: (googleApiKey: string) => void;
 
-  googleCSEId: string;
-  setGoogleCSEId: (cseId: string) => void;
+    googleCSEId: string;
+    setGoogleCSEId: (cseId: string) => void;
+
+    //Embeddings
+
+    embeddingsApiKey: string;
+    setEmbeddingsApiKey: (apiKey: string) => void;
+
+    embeddingsIndex: string;
+    setEmbeddingsIndex: (index: string) => void;
+
+    embeddingsDocs: number;
+    setEmbeddingsDocs: (docs: number) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
-  persist(
-    (set) => ({
+    persist(
+        (set) => ({
 
-      // UI settings
+            // UI settings
 
-      preferredLanguage: (typeof navigator !== 'undefined') && navigator.language || 'en-US',
-      setPreferredLanguage: (preferredLanguage: string) => set({ preferredLanguage }),
+            preferredLanguage: (typeof navigator !== 'undefined') && navigator.language || 'en-US',
+            setPreferredLanguage: (preferredLanguage: string) => set({preferredLanguage}),
 
-      centerMode: 'wide',
-      setCenterMode: (centerMode: 'narrow' | 'wide' | 'full') => set({ centerMode }),
+            centerMode: 'wide',
+            setCenterMode: (centerMode: 'narrow' | 'wide' | 'full') => set({centerMode}),
 
-      enterToSend: false,
-      setEnterToSend: (enterToSend: boolean) => set({ enterToSend }),
+            enterToSend: false,
+            setEnterToSend: (enterToSend: boolean) => set({enterToSend}),
 
-      renderMarkdown: false,
-      setRenderMarkdown: (renderMarkdown: boolean) => set({ renderMarkdown }),
+            renderMarkdown: false,
+            setRenderMarkdown: (renderMarkdown: boolean) => set({renderMarkdown}),
 
-      showPurposeFinder: false,
-      setShowPurposeFinder: (showPurposeFinder: boolean) => set({ showPurposeFinder }),
+            showPurposeFinder: false,
+            setShowPurposeFinder: (showPurposeFinder: boolean) => set({showPurposeFinder}),
 
-      showSystemMessages: false,
-      setShowSystemMessages: (showSystemMessages: boolean) => set({ showSystemMessages }),
+            showSystemMessages: false,
+            setShowSystemMessages: (showSystemMessages: boolean) => set({showSystemMessages}),
 
-      zenMode: 'clean',
-      setZenMode: (zenMode: 'clean' | 'cleaner') => set({ zenMode }),
+            zenMode: 'clean',
+            setZenMode: (zenMode: 'clean' | 'cleaner') => set({zenMode}),
 
-      // OpenAI API settings
+            // OpenAI API settings
 
-      apiHost: '',
-      setApiHost: (apiHost: string) => set({ apiHost }),
+            apiHost: '',
+            setApiHost: (apiHost: string) => set({apiHost}),
 
-      apiKey: '',
-      setApiKey: (apiKey: string) => set({ apiKey }),
+            apiKey: '',
+            setApiKey: (apiKey: string) => set({apiKey}),
 
-      apiOrganizationId: '',
-      setApiOrganizationId: (apiOrganizationId: string) => set({ apiOrganizationId }),
+            apiOrganizationId: '',
+            setApiOrganizationId: (apiOrganizationId: string) => set({apiOrganizationId}),
 
-      heliconeKey: '',
-      setHeliconeKey: (heliconeKey: string) => set({ heliconeKey }),
+            heliconeKey: '',
+            setHeliconeKey: (heliconeKey: string) => set({heliconeKey}),
 
-      modelTemperature: 0.5,
-      setModelTemperature: (modelTemperature: number) => set({ modelTemperature }),
+            modelTemperature: 0.5,
+            setModelTemperature: (modelTemperature: number) => set({modelTemperature}),
 
-      modelMaxResponseTokens: 1024,
-      setModelMaxResponseTokens: (modelMaxResponseTokens: number) => set({ modelMaxResponseTokens: modelMaxResponseTokens }),
+            modelMaxResponseTokens: 1024,
+            setModelMaxResponseTokens: (modelMaxResponseTokens: number) => set({modelMaxResponseTokens: modelMaxResponseTokens}),
 
-      // ElevenLabs Text to Speech settings
+            // ElevenLabs Text to Speech settings
 
-      elevenLabsApiKey: '',
-      setElevenLabsApiKey: (elevenLabsApiKey: string) => set({ elevenLabsApiKey }),
+            elevenLabsApiKey: '',
+            setElevenLabsApiKey: (elevenLabsApiKey: string) => set({elevenLabsApiKey}),
 
-      elevenLabsVoiceId: '',
-      setElevenLabsVoiceId: (elevenLabsVoiceId: string) => set({ elevenLabsVoiceId }),
+            elevenLabsVoiceId: '',
+            setElevenLabsVoiceId: (elevenLabsVoiceId: string) => set({elevenLabsVoiceId}),
 
-      elevenLabsAutoSpeak: 'firstLine',
-      setElevenLabsAutoSpeak: (elevenLabsAutoSpeak: 'off' | 'firstLine') => set({ elevenLabsAutoSpeak }),
+            elevenLabsAutoSpeak: 'firstLine',
+            setElevenLabsAutoSpeak: (elevenLabsAutoSpeak: 'off' | 'firstLine') => set({elevenLabsAutoSpeak}),
 
-      // Prodia Image Generation settings
+            // Prodia Image Generation settings
 
-      prodiaApiKey: '',
-      setProdiaApiKey: (prodiaApiKey: string) => set({ prodiaApiKey }),
+            prodiaApiKey: '',
+            setProdiaApiKey: (prodiaApiKey: string) => set({prodiaApiKey}),
 
-      prodiaModelId: '',
-      setProdiaModelId: (prodiaModelId: string) => set({ prodiaModelId }),
+            prodiaModelId: '',
+            setProdiaModelId: (prodiaModelId: string) => set({prodiaModelId}),
 
-      prodiaNegativePrompt: '',
-      setProdiaNegativePrompt: (prodiaNegativePrompt: string) => set({ prodiaNegativePrompt }),
+            prodiaNegativePrompt: '',
+            setProdiaNegativePrompt: (prodiaNegativePrompt: string) => set({prodiaNegativePrompt}),
 
-      prodiaSteps: 25,
-      setProdiaSteps: (prodiaSteps: number) => set({ prodiaSteps }),
+            prodiaSteps: 25,
+            setProdiaSteps: (prodiaSteps: number) => set({prodiaSteps}),
 
-      prodiaCfgScale: 7,
-      setProdiaCfgScale: (prodiaCfgScale: number) => set({ prodiaCfgScale }),
+            prodiaCfgScale: 7,
+            setProdiaCfgScale: (prodiaCfgScale: number) => set({prodiaCfgScale}),
 
-      prodiaSeed: null,
-      setProdiaSeed: (prodiaSeed: string) => set({ prodiaSeed: (prodiaSeed === '' || prodiaSeed === '-1') ? null : parseInt(prodiaSeed) ?? null }),
+            prodiaSeed: null,
+            setProdiaSeed: (prodiaSeed: string) => set({prodiaSeed: (prodiaSeed === '' || prodiaSeed === '-1') ? null : parseInt(prodiaSeed) ?? null}),
 
-      // Google Custom Search settings
-      googleCloudApiKey: '',
-      setGoogleCloudApiKey: (googleApiKey: string) => set({ googleCloudApiKey: googleApiKey }),
+            // Google Custom Search settings
+            googleCloudApiKey: '',
+            setGoogleCloudApiKey: (googleApiKey: string) => set({googleCloudApiKey: googleApiKey}),
 
-      googleCSEId: '',
-      setGoogleCSEId: (cseId: string) => set({ googleCSEId: cseId }),
-    }),
-    {
-      name: 'app-settings',
-    }),
+            googleCSEId: '',
+            setGoogleCSEId: (cseId: string) => set({googleCSEId: cseId}),
+
+            //Embeddings
+            embeddingsApiKey: '',
+            setEmbeddingsApiKey: (val: string) => set({embeddingsApiKey: val}),
+
+            embeddingsIndex: 'index',
+            setEmbeddingsIndex: (val: string) => set({embeddingsIndex: val}),
+
+            embeddingsDocs: 1,
+            setEmbeddingsDocs: (val: number) => set({embeddingsDocs: val}),
+        }),
+        {
+            name: 'app-settings',
+        }),
 );

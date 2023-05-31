@@ -25,6 +25,8 @@ declare namespace NodeJS {
     GOOGLE_CLOUD_API_KEY: string;
     GOOGLE_CSE_ID: string;
 
+    //vector database
+    VECTORDB_API_HOST: string;
   }
 
   interface ProcessEnv {
@@ -34,6 +36,7 @@ declare namespace NodeJS {
     HAS_SERVER_KEY_ELEVENLABS: boolean;
     HAS_SERVER_KEY_PRODIA: boolean;
     HAS_SERVER_KEYS_GOOGLE_CSE: boolean;
+    HAS_SERVER_KEY_OPENAI_EMBEDDINGS: boolean;
 
   }
 }

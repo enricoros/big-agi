@@ -29,6 +29,7 @@ import { imaginePromptFromText } from './util/ai-functions';
 import { runAssistantUpdatingState } from './util/agi-immediate';
 import { runImageGenerationUpdatingState } from './util/imagine';
 import { runReActUpdatingState } from './util/agi-react';
+import { runEmbeddingsUpdatingState } from './util/agi-embeddings';
 
 
 const SPECIAL_ID_ALL_CHATS = 'all-chats';
@@ -94,6 +95,10 @@ export function Chat() {
       switch (sendModeId) {
         case 'immediate':
           return await runAssistantUpdatingState(conversationId, history, chatModelId, systemPurposeId);
+        case 'embeddings':
+          if (lastMessage?.text) {
+          return await runEmbeddingsUpdatingState(conversationId, history, lastMessage.text, chatModelId, systemPurposeId);
+          }
         case 'react':
           if (lastMessage?.text) {
             setMessages(conversationId, history);

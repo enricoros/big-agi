@@ -13,6 +13,7 @@ import { useSettingsStore } from '@/common/state/store-settings';
 import { useUIStore } from '@/common/state/store-ui';
 
 import { UISettings } from './UISettings';
+import {EmbeddingsSettings} from "@/modules/openai/embeddings/EmbeddingsSettings";
 
 
 /**
@@ -47,6 +48,8 @@ export function SettingsModal() {
           <ProdiaSettings />
 
           <SearchSettings />
+
+          <EmbeddingsSettings />
 
           <OpenAIAdvancedSettings />
 
