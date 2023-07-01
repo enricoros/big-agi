@@ -1,8 +1,9 @@
 import * as React from 'react';
+import { shallow } from 'zustand/shallow';
 
-import { Alert, Box, Button, Card, CardContent, CircularProgress, Grid, IconButton, Input, ListDivider, Typography } from '@mui/joy';
-import YouTubeIcon from '@mui/icons-material/YouTube';
+import { Alert, Box, Button, Card, CardContent, CircularProgress, Grid, IconButton, Input, ListDivider, Radio, RadioGroup, Typography } from '@mui/joy';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 
 import { apiQuery } from '~/modules/trpc/trpc.client';
 import { useModelsStore } from '~/modules/llms/store-llms';
@@ -55,17 +56,30 @@ const YouTubePersonaSteps: LLMChainStep[] = [
 export function YTPersonaCreator() {
   // state
   const [videoURL, setVideoURL] = React.useState('');
+  const [selectedModelType, setSelectedModelType] = React.useState<'chat' | 'fast'>('fast');
+  const [selectedLLMLabel, setSelectedLLMLabel] = React.useState<string | null>(null);
   const [videoID, setVideoID] = React.useState('');
   const [personaTransacript, setPersonaTransacript] = React.useState<string | null>(null);
+
+  // external state
+  const { chatLLM, fastLLM } = useModelsStore(state => {
+    const { chatLLMId, fastLLMId } = state;
+    const chatLLM = state.llms.find(llm => llm.id === chatLLMId) ?? null;
+    const fastLLM = state.llms.find(llm => llm.id === fastLLMId) ?? null;
+    return {
+      chatLLM: chatLLM,
+      fastLLM: chatLLM === fastLLM ? null : fastLLM,
+    };
+  }, shallow);
 
   // fetch transcript when the Video ID is ready, then store it
   const { transcript, isFetching, isError, error: transcriptError } = useTranscriptFromVideo(videoID);
   React.useEffect(() => setPersonaTransacript(transcript), [transcript]);
 
   // use the transformation sequence to create a persona
-  const { fastLLMId } = useModelsStore.getState();
+  const llm = selectedModelType === 'chat' ? chatLLM : fastLLM;
   const { isFinished, isTransforming, chainProgress, chainIntermediates, chainStepName, chainOutput, chainError } =
-    useLLMChain(YouTubePersonaSteps, fastLLMId ?? undefined, personaTransacript ?? undefined);
+    useLLMChain(YouTubePersonaSteps, llm?.id, personaTransacript ?? undefined);
   React.useEffect(() => setPersonaTransacript(transcript), [chainOutput]);
 
   const handleVideoIdChange = (e: React.ChangeEvent<HTMLInputElement>) => setVideoURL(e.target.value);
@@ -85,13 +99,12 @@ export function YTPersonaCreator() {
 
     <ListDivider />
 
-    <Typography color='primary' sx={{ textAlign: 'center', mt: 4 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2, mt: 2 }}>
       <YouTubeIcon sx={{ fontSize: 'xl6', color: '#f00' }} />
-    </Typography>
-
-    <Typography level='h5'>
-      Create a YouTube persona
-    </Typography>
+      <Typography level='h5'>
+        YouTube -&gt; AI persona
+      </Typography>
+    </Box>
 
     <form onSubmit={handleFetchTranscript}>
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
@@ -120,6 +133,17 @@ export function YTPersonaCreator() {
       </Box>
     </form>
 
+    {/* LLM selector (chat vs fast) */}
+    {!isTransforming && !isFinished && !!chatLLM && !!fastLLM && (
+      <RadioGroup
+        orientation='horizontal'
+        value={selectedModelType}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSelectedModelType(event.target.value as 'chat' | 'fast')}
+      >
+        <Radio value='chat' label={chatLLM.label.startsWith('GPT-4') ? chatLLM.label + ' (slow, accurate)' : chatLLM.label} />
+        <Radio value='fast' label={fastLLM.label} />
+      </RadioGroup>
+    )}
 
     {/* After the first roundtrip */}
     {isError && (
@@ -169,8 +193,8 @@ export function YTPersonaCreator() {
           <Grid xs={12} sm={6} md={4} key={i}>
             <Card>
               <CardContent>
-                <Typography>
-                  {intermediate?.slice(0, 280)}...
+                <Typography level='body2'>
+                  {intermediate?.slice(0, 140)}...
                 </Typography>
               </CardContent>
             </Card>
