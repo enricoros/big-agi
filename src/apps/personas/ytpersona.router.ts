@@ -15,7 +15,7 @@ const youtubeTranscriptionSchema = z.object({
   events: z.array(
     z.object({
       tStartMs: z.number(),
-      dDurationMs: z.number(),
+      dDurationMs: z.number().optional(),
       aAppend: z.number().optional(),
       segs: z.array(
         z.object({
@@ -54,8 +54,10 @@ export const ytPersonaRouter = createTRPCRouter({
         const captionsData = await fetch(captionsUrl + `&fmt=json3`);
         const captions = await captionsData.json();
         const safeData = youtubeTranscriptionSchema.safeParse(captions);
-        if (!safeData.success)
+        if (!safeData.success) {
+          console.error(safeData.error);
           throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: '[YouTube API Issue] Could not parse the captions' });
+        }
 
         // 3. flatten to text
         const transcript = safeData.data.events
