@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Alert, Box, Button, Card, CardContent, CircularProgress, IconButton, Input, ListDivider, Typography } from '@mui/joy';
+import { Alert, Box, Button, Card, CardContent, CircularProgress, Grid, IconButton, Input, ListDivider, Typography } from '@mui/joy';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 
@@ -34,19 +34,20 @@ function useTranscriptFromVideo(videoID: string | null) {
 
 const YouTubePersonaSteps: LLMChainStep[] = [
   {
-    name: 'Analysis',
-    type: 'system_input_assistant-1',
-    systemPrompt: 'Conduct comprehensive research on the provided transcript. Identify key characteristics of the speaker, including age, professional field, distinct personality traits, style of communication, narrative context, and self-awareness. Additionally, consider any unique aspects such as their use of humor, their cultural background, core values, passions, fears, personal history, and social interactions. Your output for this stage is an in-depth written analysis that exhibits an understanding of both the superficial and more profound aspects of the speaker\'s persona.',
+    name: 'Analyze the Transcript',
+    setSystem: 'You are skilled in analyzing and embodying diverse characters. You meticulously study transcripts to capture key attributes, draft comprehensive character sheets, and refine them for authenticity. Feel free to make assumptions without hedging, be concise and be creative.',
+    addUserInput: true,
+    addUser: 'Conduct comprehensive research on the provided transcript. Identify key characteristics of the speaker, including age, professional field, distinct personality traits, style of communication, narrative context, and self-awareness. Additionally, consider any unique aspects such as their use of humor, their cultural background, core values, passions, fears, personal history, and social interactions. Your output for this stage is an in-depth written analysis that exhibits an understanding of both the superficial and more profound aspects of the speaker\'s persona.',
   },
   {
-    name: 'Character Sheet Drafting',
-    type: 'system_input_assistant-1',
-    systemPrompt: 'Craft your documented analysis into a draft of the \'You are a...\' character sheet. It should encapsulate all crucial personality dimensions, along with the motivations and aspirations of the persona. Keep in mind to balance succinctness and depth of detail for each dimension. The deliverable here is a comprehensive draft of the character sheet that captures the speaker\'s unique essence.',
+    name: 'Draft Character Sheet',
+    addPrevAssistant: true,
+    addUser: 'Craft your documented analysis into a draft of the \'You are a...\' character sheet. It should encapsulate all crucial personality dimensions, along with the motivations and aspirations of the persona. Keep in mind to balance succinctness and depth of detail for each dimension. The deliverable here is a comprehensive draft of the character sheet that captures the speaker\'s unique essence.',
   },
   {
-    name: 'Validation and Refinement',
-    type: 'system_input_assistant-1',
-    systemPrompt: 'Compare the draft character sheet with the original transcript, validating its content and ensuring it captures both the speaker’s overt characteristics and the subtler undertones. Fine-tune any areas that require clarity, have been overlooked, or require more authenticity. Use clear and illustrative examples from the transcript to refine your sheet and offer meaningful, tangible reference points. Your finalized deliverable is a coherent, comprehensive, and nuanced \'You are a...\' character sheet that serves as a go-to guide for an actor recreating the persona.',
+    name: 'Validate and Refine',
+    addPrevAssistant: true,
+    addUser: 'Compare the draft character sheet with the original transcript, validating its content and ensuring it captures both the speaker’s overt characteristics and the subtler undertones. Omit unknown information, fine-tune any areas that require clarity, have been overlooked, or require more authenticity. Use clear and illustrative examples from the transcript to refine your sheet and offer meaningful, tangible reference points. Your output is a coherent, comprehensive, and nuanced instruction that begins with \'You are a...\' and  serves as a go-to guide for an actor recreating the persona.',
   },
 ];
 
@@ -63,7 +64,7 @@ export function YTPersonaCreator() {
 
   // use the transformation sequence to create a persona
   const { fastLLMId } = useModelsStore.getState();
-  const { isFinished, isTransforming, chainProgress, chainOutput, chainError } =
+  const { isFinished, isTransforming, chainProgress, chainIntermediates, chainStepName, chainOutput, chainError } =
     useLLMChain(YouTubePersonaSteps, fastLLMId ?? undefined, personaTransacript ?? undefined);
   React.useEffect(() => setPersonaTransacript(transcript), [chainOutput]);
 
@@ -151,7 +152,31 @@ export function YTPersonaCreator() {
       <Typography level='h5' sx={{ mt: 1 }}>
         Transforming...
       </Typography>
-      <CircularProgress determinate value={100 * chainProgress} />
+      <CircularProgress determinate value={Math.max(10, 100 * chainProgress)} />
+      {!!chainStepName && <Typography sx={{ mt: 1 }}>
+        {chainStepName}
+      </Typography>}
+    </Box>}
+
+
+    {/* Intermediate outputs rendered as cards in a grid */}
+    {chainIntermediates && chainIntermediates.length > 0 && <Box sx={{ mt: 2 }}>
+      <Typography level='h5'>
+        Intermediate Outputs
+      </Typography>
+      <Grid container spacing={2}>
+        {chainIntermediates.map((intermediate, i) =>
+          <Grid xs={12} sm={6} md={4} key={i}>
+            <Card>
+              <CardContent>
+                <Typography>
+                  {intermediate?.slice(0, 280)}...
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>,
+        )}
+      </Grid>
     </Box>}
 
     {/* Character Sheet */}

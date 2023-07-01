@@ -1,41 +1,40 @@
 import * as React from 'react';
 
 import { DLLMId } from '~/modules/llms/llm.types';
-import { callChatGenerate } from '~/modules/llms/llm.client';
+import { callChatGenerate, VChatMessageIn } from '~/modules/llms/llm.client';
 import { useModelsStore } from '~/modules/llms/store-llms';
 
 
 export interface LLMChainStep {
   name: string;
-  type: 'system_input_assistant-1',
-  systemPrompt: string;
+  setSystem?: string;
+  addPrevAssistant?: boolean;
+  addUserInput?: boolean;
+  addUser?: string;
 }
 
 
 /**
  * React hook to manage a chain of LLM transformations.
  */
-export function useLLMChain(steps: LLMChainStep[], llmId?: DLLMId, input?: string) {
+export function useLLMChain(steps: LLMChainStep[], llmId?: DLLMId, chainInput?: string) {
   const [chain, setChain] = React.useState<ChainState | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const abortController = React.useRef(new AbortController());
 
 
-  // start/stop the chain on input changes
+  // start/stop when conditions change
   React.useEffect(() => {
-    if (input) {
-      if (llmId) {
-        setError(null);
-        setChain(initChainState(llmId, input, steps.map((step) => step.systemPrompt)));
-      } else {
-        setError('LLM not provided');
-      }
-    } else {
+    if (!chainInput) {
       setChain(null);
       abortController.current.abort(); // cancel any ongoing transformation
       abortController.current = new AbortController(); // create a new abort controller for the next transformation
+      return;
     }
-  }, [input, llmId, steps]);
+    setError(llmId ? null : 'LLM not provided');
+    if (llmId)
+      setChain(initChainState(llmId, chainInput, steps));
+  }, [chainInput, llmId, steps]);
 
 
   // perform the next step
@@ -50,27 +49,26 @@ export function useLLMChain(steps: LLMChainStep[], llmId?: DLLMId, input?: strin
       console.log('WARNING - Output not clear - why is this happening?', chainStep);
       return;
     }
-    if (!chainStep.input) {
-      console.log('WARNING - Input not clear - why is this happening?', chainStep);
-      return;
-    }
 
-    // carve the middle part of the input if it's too long
-    let inputText = chainStep.input;
-    if (inputText.length > chain.safeInputLength) {
-      const halfSafe = Math.floor(chain.safeInputLength / 2);
-      inputText = `${inputText.substring(0, halfSafe)}\n...\n${inputText.substring(inputText.length - halfSafe)}`;
+    // execute the step
+    let llmChatInput: VChatMessageIn[] = [...chain.chatHistory];
+    const instruction = chainStep.ref;
+    if (instruction.setSystem) {
+      llmChatInput = llmChatInput.filter((msg) => msg.role !== 'system');
+      llmChatInput.unshift({ role: 'system', content: instruction.setSystem });
     }
+    if (instruction.addUserInput)
+      llmChatInput.push({ role: 'user', content: implodeText(chain.input, chain.safeInputLength) });
+    if (instruction.addPrevAssistant && stepIdx > 0)
+      llmChatInput.push({ role: 'assistant', content: implodeText(chain.steps[stepIdx - 1].output!, chain.safeInputLength) });
+    if (instruction.addUser)
+      llmChatInput.push({ role: 'user', content: instruction.addUser });
 
     // perform the LLM transformation
-    callChatGenerate(llmId, [
-        { role: 'system', content: chainStep.systemPrompt },
-        { role: 'user', content: inputText },
-      ], chain.overrideResponseTokens,
-    )
+    callChatGenerate(llmId, llmChatInput, chain.overrideResponseTokens)
       .then(({ content }) => {
         // TODO: figure out how to handle the abort signal
-        setChain(updateChainState(chain, stepIdx, content));
+        setChain(updateChainState(chain, llmChatInput, stepIdx, content));
       })
       .catch((err) => {
         if (err.name === 'AbortError') {
@@ -87,8 +85,10 @@ export function useLLMChain(steps: LLMChainStep[], llmId?: DLLMId, input?: strin
   return {
     isFinished: !!chain?.output,
     isTransforming: !!chain?.steps?.length && !chain?.output,
-    chainProgress: chain?.progress ?? 0,
     chainOutput: chain?.output ?? null,
+    chainProgress: chain?.progress ?? 0,
+    chainStepName: chain?.steps?.find((step) => !step.isComplete)?.ref.name ?? null,
+    chainIntermediates: chain?.steps?.map((step) => step.output ?? null)?.filter(out => out) ?? [],
     chainError: error,
   };
 }
@@ -96,6 +96,7 @@ export function useLLMChain(steps: LLMChainStep[], llmId?: DLLMId, input?: strin
 
 interface ChainState {
   steps: StepState[];
+  chatHistory: VChatMessageIn[];
   progress: number;
   safeInputLength: number;
   overrideResponseTokens: number;
@@ -104,15 +105,13 @@ interface ChainState {
 }
 
 interface StepState {
-  idx: number;
-  systemPrompt: string;
-  input?: string;
+  ref: LLMChainStep;
   output?: string;
   isComplete: boolean;
   isLast: boolean;
 }
 
-function initChainState(llmId: DLLMId, input: string, systemPrompts: string[]): ChainState {
+function initChainState(llmId: DLLMId, input: string, steps: LLMChainStep[]): ChainState {
   // max token allocation fo the job
   const { llms } = useModelsStore.getState();
   const llm = llms.find(llm => llm.id === llmId);
@@ -122,17 +121,16 @@ function initChainState(llmId: DLLMId, input: string, systemPrompts: string[]): 
   const maxTokens = llm.contextTokens;
   const overrideResponseTokens = Math.floor(maxTokens * 1 / 3);
   const inputTokens = maxTokens - overrideResponseTokens;
-  const safeInputLength = Math.floor(inputTokens * 3); // it's deemed around 4
+  const safeInputLength = Math.floor(inputTokens * 2); // it's deemed around 4
 
   return {
-    steps: systemPrompts.map((systemPrompt, i) => ({
-      idx: i,
-      systemPrompt,
-      input: !i ? input : undefined,
+    steps: steps.map((step, i) => ({
+      ref: step,
       output: undefined,
       isComplete: false,
-      isLast: i === systemPrompts.length - 1,
+      isLast: i === steps.length - 1,
     })),
+    chatHistory: [],
     overrideResponseTokens,
     safeInputLength,
     progress: 0,
@@ -141,21 +139,24 @@ function initChainState(llmId: DLLMId, input: string, systemPrompts: string[]): 
   };
 }
 
-function updateChainState(chain: ChainState, stepIdx: number, output: string): ChainState {
+function updateChainState(chain: ChainState, history: VChatMessageIn[], stepIdx: number, output: string): ChainState {
   const steps = chain.steps.length;
   return {
     ...chain,
     steps: chain.steps.map((step, i) =>
       (i === stepIdx) ? {
-          ...step,
-          output: output,
-          isComplete: true,
-        }
-        : (i === stepIdx + 1) ? {
-          ...step,
-          input: output,
-        } : step),
+        ...step,
+        output: output,
+        isComplete: true,
+      } : step),
+    chatHistory: history,
     progress: Math.round(100 * (stepIdx + 1) / steps) / 100,
     output: (stepIdx === steps - 1) ? output : null,
   };
+}
+
+function implodeText(text: string, maxLength: number) {
+  if (text.length <= maxLength) return text;
+  const halfLength = Math.floor(maxLength / 2);
+  return `${text.substring(0, halfLength)}\n...\n${text.substring(text.length - halfLength)}`;
 }
