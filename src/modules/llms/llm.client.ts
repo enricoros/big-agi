@@ -38,7 +38,7 @@ export async function callChatGenerateWithFunctions(llmId: DLLMId, messages: VCh
 }
 
 
-function getLLMAndVendorOrThrow(llmId: string) {
+function getLLMAndVendorOrThrow(llmId: DLLMId) {
   const llm = useModelsStore.getState().llms.find(llm => llm.id === llmId);
   const vendor = findVendorById(llm?._source.vId);
   if (!llm || !vendor) throw new Error(`callChat: Vendor not found for LLM ${llmId}`);
