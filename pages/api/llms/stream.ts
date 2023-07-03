@@ -25,7 +25,7 @@ function parseOpenAIStream(): AIStreamParser {
 
     // an upstream error will be handled gracefully and transmitted as text (throw to transmit as 'error')
     if (json.error)
-      return { text: `[OpenAI Issue] ${json.error.message || json.error}`, close: true };
+      return { text: `[OpenAI Issue] ${json.error.message || json.error} (2)`, close: true };
 
     if (json.choices.length !== 1)
       throw new Error(`[OpenAI Issue] Expected 1 completion, got ${json.choices.length}`);
@@ -139,7 +139,7 @@ export default async function handler(req: NextRequest): Promise<Response> {
   } catch (error: any) {
     const fetchOrVendorError = (error?.message || typeof error === 'string' ? error : JSON.stringify(error)) + (error?.cause ? ' · ' + error.cause : '');
     console.log(`/api/llms/stream: fetch issue: ${fetchOrVendorError}`);
-    throw new Error('[OpenAI Issue] ' + fetchOrVendorError);
+    throw new Error(`[OpenAI Issue] ${fetchOrVendorError} (1)`);
   }
 
   /* The following code is heavily inspired by the Vercel AI SDK, but simplified to our needs and in full control.
