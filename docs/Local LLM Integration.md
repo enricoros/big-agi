@@ -32,7 +32,7 @@ This guide presumes that `big-AGI` is already installed on your system.
 6. Modify `CMD_FLAGS` to: `CMD_FLAGS = '--chat --listen --extensions openai'`.
 7. Run the start file in the terminal. You should see `OPENAI_API_BASE=http://0.0.0.0:5001/v1`.
 8. Launch `big-AGI`.
-9. Navigate to `models>Advanced>API Host` and enter the provided IP address (or `127.0.0.1`). If the `text-web-ui` server is operating on a different networked computer, change the address from `0.0.0.0` to the server's IP.
+9. Navigate to `models>Advanced>API Host` and enter the provided IP address (`http://0.0.0.0` or `http://127.0.0.1`) and port. If the `text-web-ui` server is operating on a different networked computer, change the address from `0.0.0.0` to the server's IP. The format is `IP:Port`.
 10. Use `OPENAI_API_KEY=sk-111111111111111111111111111111111111111111111111` for the API key.
     
 
