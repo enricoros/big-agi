@@ -31,6 +31,7 @@ import { restoreConversationFromJson } from './exportImport';
 import { runAssistantUpdatingState } from './editors/chat-stream';
 import { runImageGenerationUpdatingState } from './editors/image-generate';
 import { runReActUpdatingState } from './editors/react-tangent';
+import { CmdSystemMessage } from '~/modules/llms/llm.client';
 
 
 const SPECIAL_ID_ALL_CHATS = 'all-chats';
@@ -112,6 +113,10 @@ export function AppChat() {
         if (CmdRunReact.includes(command) && chatLLMId) {
           setMessages(conversationId, history);
           return await runReActUpdatingState(conversationId, prompt, chatLLMId);
+        }
+        if (CmdSystemMessage.includes(command)) {
+          lastMessage.role = "system"
+          lastMessage.text = pieces[1].value
         }
         // if (CmdRunSearch.includes(command))
         //   return await run...

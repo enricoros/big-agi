@@ -179,7 +179,7 @@ export function ChatMessage(props: { message: DMessage, isBottom: boolean, onMes
   }), shallow);
   const renderMarkdown = _renderMarkdown && !fromSystem;
   const isImaginable = canUseProdia();
-  const isImaginableEnabled = messageText?.length > 5 && !messageText.startsWith('https://images.prodia.xyz/') && !(messageText.startsWith('/imagine') || messageText.startsWith('/img'));
+  const isImaginableEnabled = messageText?.length > 5 && !messageText.startsWith('https://images.prodia.xyz/') && !(messageText.startsWith('/imagine') || messageText.startsWith('/img') || messageText.startsWith('/system')  || messageText.startsWith('/sys') || messageText.startsWith('/s'));
   const isSpeakable = canUseElevenLabs();
 
   const closeOperationsMenu = () => setMenuAnchor(null);

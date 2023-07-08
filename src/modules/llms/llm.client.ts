@@ -3,6 +3,7 @@ import { OpenAI } from './openai/openai.types';
 import { findVendorById } from './vendor.registry';
 import { useModelsStore } from './store-llms';
 
+export const CmdSystemMessage: string[] = ['/system', '/sys', '/s'];
 
 export type ModelVendorCallChatFn = (llm: DLLM, messages: VChatMessageIn[], maxTokens?: number) => Promise<VChatMessageOut>;
 export type ModelVendorCallChatWithFunctionsFn = (llm: DLLM, messages: VChatMessageIn[], functions: VChatFunctionIn[], maxTokens?: number) => Promise<VChatMessageOrFunctionCallOut>;

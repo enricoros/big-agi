@@ -1,8 +1,9 @@
 import { CmdRunProdia } from '~/modules/prodia/prodia.client';
 import { CmdRunReact } from '~/modules/aifn/react/react';
 import { CmdRunSearch } from '~/modules/google/search.client';
+import { CmdSystemMessage } from '~/modules/llms/llm.client';
 
-export const commands = [...CmdRunProdia, ...CmdRunSearch, ...CmdRunReact];
+export const commands = [...CmdRunProdia, ...CmdRunSearch, ...CmdRunReact, ...CmdSystemMessage];
 
 export interface SentencePiece {
   type: 'text' | 'cmd';

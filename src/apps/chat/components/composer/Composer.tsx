@@ -426,7 +426,7 @@ export function Composer(props: {
   // const isProdiaConfigured = !requireUserKeyProdia || prodiaApiKey;
   const textPlaceholder: string = props.isDeveloperMode
     ? 'Tell me what you need, and drop source files...'
-    : /*isProdiaConfigured ?*/ 'Chat · /react · /imagine · drop text files...' /*: 'Chat · /react · drop text files...'*/;
+    : /*isProdiaConfigured ?*/ 'Chat · /react · /imagine · /system · drop text files...' /*: 'Chat · /react · drop text files...'*/;
 
   const isImmediate = props.chatModeId === 'immediate';
   const isFollowUp = props.chatModeId === 'immediate-follow-up';
