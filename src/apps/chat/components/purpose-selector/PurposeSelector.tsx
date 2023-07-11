@@ -11,13 +11,12 @@ import { useUIPreferencesStore } from '~/common/state/store-ui';
 import { SystemPurposeId, SystemPurposes } from '../../../../data';
 import { usePurposeStore } from './store-purposes';
 
-
 // Constants for tile sizes / grid width - breakpoints need to be computed here to work around
 // the "flex box cannot shrink over wrapped content" issue
 //
 // Absolutely dislike this workaround, but it's the only way I found to make it work
 
-const bpTileSize = { xs: 116, md: 125, xl: 130 };
+const bpTileSize = { xs: 140, md: 150, xl: 170 };
 const tileCols = [3, 4, 6];
 const tileSpacing = 1;
 const bpMaxWidth = Object.entries(bpTileSize).reduce((acc, [key, value], index) => {

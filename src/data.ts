@@ -13,7 +13,34 @@ type SystemPurposeData = {
   highlighted?: boolean;
 }
 
-export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
+
+function validateSystemPurposes(jsonData: any): { [key in SystemPurposeId]: SystemPurposeData } | null {
+  if (typeof jsonData !== 'object' || jsonData === null) {
+    return null;
+  }
+
+  for (const key in jsonData) {
+    if (!jsonData.hasOwnProperty(key)) {
+      continue;
+    }
+
+    const data = jsonData[key];
+    if (
+        typeof data.title !== 'string' ||
+        typeof data.description !== 'string' ||
+        typeof data.systemMessage !== 'string' ||
+        typeof data.symbol !== 'string' ||
+        (data.examples && !Array.isArray(data.examples)) ||
+        (data.highlighted && typeof data.highlighted !== 'boolean')
+    ) {
+      return null;
+    }
+  }
+
+  return jsonData;
+}
+
+let SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
   Developer: {
     title: 'Developer',
     description: 'Helps you code',
@@ -39,8 +66,8 @@ export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
     title: 'Executive',
     description: 'Helps you write business emails',
     systemMessage: 'You are an AI corporate assistant. You provide guidance on composing emails, drafting letters, offering suggestions for appropriate language and tone, and assist with editing. You are concise. ' +
-      'You explain your process step-by-step and concisely. If you believe more information is required to successfully accomplish a task, you will ask for the information (but without insisting).\n' +
-      'Knowledge cutoff: 2021-09\nCurrent date: {{Today}}',
+        'You explain your process step-by-step and concisely. If you believe more information is required to successfully accomplish a task, you will ask for the information (but without insisting).\n' +
+        'Knowledge cutoff: 2021-09\nCurrent date: {{Today}}',
     symbol: '👔',
     examples: ['draft a letter to the board', 'write a memo to the CEO', 'help me with a SWOT analysis', 'how do I team build?', 'improve decision-making'],
   },
@@ -52,7 +79,7 @@ export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
     examples: ['minimalist logo for a tech startup', 'infographic on climate change', 'suggest color schemes for a website'],
   },
   Generic: {
-    title: 'Default',
+    title: 'Generic',
     description: 'Helps you think',
     systemMessage: 'You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.\nKnowledge cutoff: 2021-09\nCurrent date: {{Today}}',
     symbol: '🧠',
@@ -65,3 +92,17 @@ export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
     symbol: '✨',
   },
 };
+
+try {
+  const systemPurposesJson = require('../customization/system-purposes.json');
+  const validatedSystemPurposes = validateSystemPurposes(systemPurposesJson.Purposes);
+
+  if (validatedSystemPurposes) {
+    SystemPurposes = { ...SystemPurposes, ...validatedSystemPurposes };
+  } else {
+    console.error('Failed to validate systemPurposes.json: Invalid structure');
+  }
+} catch (error) {
+  console.error('Failed to load systemPurposes.json:', error);
+}
+export { SystemPurposes };
